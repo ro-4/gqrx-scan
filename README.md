@@ -16,36 +16,36 @@ Control GQRX to scan frequencies or from channels using a CSV file.  The CSV fil
 
 ### Signal Detection
   * Pause scanning when a signal level threshold is met
-    * Pause for N seconds, until clear, or until the enter key is hit
+     * Pause for N seconds, until clear, or until the enter key is hit
   * Record audio
  
 ### Example usage scenarios..
 
  * Scan entire CSV file with a pause of 2s between channels
-   * gqrx-scan --type file --pause 2
+    * gqrx-scan --type file --pause 2
 
  * Scan entire GQRX CSV file with a pause of 2s between channels
-   * gqrx-scan --type gqrxfile --pause 2
+    * gqrx-scan --type gqrxfile --pause 2
 
  * Scan all lines matching the tags 2M or 70cm
-   * gqrx-scan --type gqrxfile --tags "2M|70cm"
+    * gqrx-scan --type gqrxfile --tags "2M|70cm"
 
  * Scan lines 1, 2, and 40 through 60 in the file, recording when a signal is detected
-   * gqrx-scan --type file --channels 1,2,40-60 --record
+    * gqrx-scan --type file --channels 1,2,40-60 --record
 
  * Scan FRS, GMRS, and all 145, 146, and 147 frequency channels
-   * gqrx-scan --type file --pattern "FRS|GMR|14[5|6|7]"
+    * gqrx-scan --type file --pattern "FRS|GMR|14[5|6|7]"
 
  * Scan 28.400 to 28.410 in CW mode with 500hz bandwidth, pausing for a signal level of -30 for 10s
-   * gqrx-scan --type scan --start 28400000 --end 28410000 --mode CW --bw 500 --delaylevel=-30 --delaytime 10
-   * 28.400e6 is valid too and might be easier to type/read
-   * Available modes: AM FM WFM WFM_ST LSB USB CW CWL CWU
+    * gqrx-scan --type scan --start 28400000 --end 28410000 --mode CW --bw 500 --delaylevel=-30 --delaytime 10
+    * 28.400e6 is valid too and might be easier to type/read
+    * Available modes: AM FM WFM WFM_ST LSB USB CW CWL CWU
 
  * Monitor a single channel, recording when the level is better than -50, waiting for 5 seconds before ending recording after signal drops
-   * gqrx-scan --type file --channels 20 --delaylevel=-50 --delaytime 5 --record --monitor
+    * gqrx-scan --type file --channels 20 --delaylevel=-50 --delaytime 5 --record --monitor
 
  * Use a config file
-   * gqrx-scan --config /home/path/something.pm
+    * gqrx-scan --config /home/path/something.pm
 
 ### Command Line Arguments
 
@@ -60,63 +60,63 @@ ex:  --norecord
 ##### Scan mode operations
 
  * --start 28400000
-   * Start at frequency 28.400
+    * Start at frequency 28.400
  * --end 28410000
-   * Stop at frequency 28.410
+    * Stop at frequency 28.410
  * --mode USB
-   * Scan in USB demodulation
+    * Scan in USB demodulation
  * --bw 1000
-   * Set bandwidth to 1000hz
+    * Set bandwidth to 1000hz
  * --step 250
-   * Step by 250hz in frequency scanning mode
+    * Step by 250hz in frequency scanning mode
 
 ##### gqrxfile or file mode options
 
   * --channels 19,20,30,40-50
-    * Scan channels 19, 20, 30, and channels 40 through 50
+     * Scan channels 19, 20, 30, and channels 40 through 50
   * --pattern "FRS|GMR|^145"
-    * Scan channels named FRS or GMR or frequencies starting with 145
+     * Scan channels named FRS or GMR or frequencies starting with 145
   * --tags "2M|Air"
-    * Scan channels tagged 2M or Air
+     * Scan channels tagged 2M or Air
   * --sort
-    * Sort CSV file contents by name alphabetically
+     * Sort CSV file contents by name alphabetically
   * --showall
-    * Show all channels even if skipped
+     * Show all channels even if skipped
   * --csvfilename
-    * Specify generic CSV file to use
+     * Specify generic CSV file to use
   * --gqrxcsvfilename
-    * Specify GQRX CSV file to use
+     * Specify GQRX CSV file to use
   * --dumpchannels
-    * Show all channels, do not tune any
+     * Show all channels, do not tune any
 
 ##### General scan or file options
 
   * --monitor
-    * Monitor a single frequency or channel
+     * Monitor a single frequency or channel
   * --pause 2
-    * Wait 2 seconds between frequencies/channels
+     * Wait 2 seconds between frequencies/channels
   * --exclude 28.401e6,28.410e6,KY4
-    * Exclude frequency 28 401 and 28 410 or channel with KY4 in it
+     * Exclude frequency 28 401 and 28 410 or channel with KY4 in it
 
 ##### Signal detection options
 
   * --delaylevel=-30
-    * Delay scanning or record if a signal of -30 or better is heard
-    * Note that this argument requires the equal sign
+     * Delay scanning or record if a signal of -30 or better is heard
+     * Note that this argument requires the equal sign
   * --ignorelevel=99
-    * Ignore any level that comes back as this value, such as invalid data
-    * Defaults to 0.0
+     * Ignore any level that comes back as this value, such as invalid data
+     * Defaults to 0.0
   * --delaytime 10
-    * Delay scanning for 10s when a signal is detected
+     * Delay scanning for 10s when a signal is detected
   * --record
-    * Record when signal is detected
+     * Record when signal is detected
   * --stop
-    * Stop scanning until the enter key is hit
+     * Stop scanning until the enter key is hit
   * --wait
-    * Stop scanning until the channel is clear
+     * Stop scanning until the channel is clear
   * --levelstop=0
-    * Do not pause to listen for signal
-    * Note the requirement of the equal sign
+     * Do not pause to listen for signal
+     * Note the requirement of the equal sign
 
 ### Config File
 
@@ -139,21 +139,21 @@ The --sort option is included if you want to sort the GQRX CSV file iteration by
 There are some options which will not work together or may cause unexpected side-effects.  The following are a few examples of such conflicts.
 
   * --type file --tags
-    * Tags is not valid in the generic CSV file mode, only the gqrxfile mode has tags
+     * Tags is not valid in the generic CSV file mode, only the gqrxfile mode has tags
 
   * --type file --sort
-    * Sorting is not valid in the generic CSV file mode due to differences in CSV file contents
+     * Sorting is not valid in the generic CSV file mode due to differences in CSV file contents
 
   * --type file/gqrxfile --channel 1 --pattern "ABC"
-    * Channel and Pattern are exclusive options as they are handled slightly differently
+     * Channel and Pattern are exclusive options as they are handled slightly differently
 
   * --type gqrxfile --channel 1 --tags "ABC"
-    * Channel and tags are exclusive options as they are handled slightly differently
+     * Channel and tags are exclusive options as they are handled slightly differently
 
 Combinations which will display a warning
 
   * --type gqrxfile --channels 1-5 --sort
-    * Will likely sort the channels in a different order than they are in the file (ie:  Might scan different channels than you expect)
+     * Will likely sort the channels in a different order than they are in the file (ie:  Might scan different channels than you expect)
 
 ### Defaults vs Command Line
 
@@ -191,16 +191,16 @@ With this script, you can pause the scanning using a hotkey.  How you assign tha
 ### Troubleshooting
 
   * Perl Issues
-   * Check your dependencies
-   * Your distribution most likely packages the requirements, look for them there before going to CPAN or other repositories
+    * Check your dependencies
+    * Your distribution most likely packages the requirements, look for them there before going to CPAN or other repositories
   * Command Not Found type errors when running the scripts
-   * Run gqrx-scan directly with perl, or set the script as executable.
-   * Note that the script might not be in your executable path, so even if set executable you may have to run it with the full or relative path, ie:  ./gqrx-scan
+    * Run gqrx-scan directly with perl, or set the script as executable.
+    * Note that the script might not be in your executable path, so even if set executable you may have to run it with the full or relative path, ie:  ./gqrx-scan
   * Cannot connect to GQRX
-   * Make sure the remote configuration is set to include 127.0.0.1 and ::ffff:127.0.0.1 and the script is pointing to 127.0.0.1
-      * See this GQRX bug for more info https://github.com/csete/gqrx/issues/447
-   * Make sure the port is 7356 or that the script settings are using that port
-   * Make sure the GQRX remote is enabled (you must enable it every time you start GQRX)
+     * Make sure the remote configuration is set to include 127.0.0.1 and ::ffff:127.0.0.1 and the script is pointing to 127.0.0.1
+        * See this GQRX bug for more info https://github.com/csete/gqrx/issues/447
+     * Make sure the port is 7356 or that the script settings are using that port
+     * Make sure the GQRX remote is enabled (you must enable it every time you start GQRX)
 
 ### Dependencies
 
@@ -209,9 +209,9 @@ With this script, you can pause the scanning using a hotkey.  How you assign tha
   * GQRX 2.4 to have the GQRX Bookmarks file available
 
   * Perl modules
-    * Net::Telnet
-    * Time::HiRes
-    * Getopt::Long
+     * Net::Telnet
+     * Time::HiRes
+     * Getopt::Long
 
   * Optional Perl modules
     * Term::ANSIColor
