@@ -21,31 +21,31 @@ Control GQRX to scan frequencies or from channels using a CSV file.  The CSV fil
  
 ### Example usage scenarios..
 
- * Scan entire CSV file with a pause of 2s between channels
-    * gqrx-scan --type file --pause 2
+  * Scan entire CSV file with a pause of 2s between channels
+     * gqrx-scan --type file --pause 2
 
- * Scan entire GQRX CSV file with a pause of 2s between channels
-    * gqrx-scan --type gqrxfile --pause 2
+  * Scan entire GQRX CSV file with a pause of 2s between channels
+     * gqrx-scan --type gqrxfile --pause 2
 
- * Scan all lines matching the tags 2M or 70cm
-    * gqrx-scan --type gqrxfile --tags "2M|70cm"
+  * Scan all lines matching the tags 2M or 70cm
+     * gqrx-scan --type gqrxfile --tags "2M|70cm"
 
- * Scan lines 1, 2, and 40 through 60 in the file, recording when a signal is detected
-    * gqrx-scan --type file --channels 1,2,40-60 --record
+  * Scan lines 1, 2, and 40 through 60 in the file, recording when a signal is detected
+     * gqrx-scan --type file --channels 1,2,40-60 --record
 
- * Scan FRS, GMRS, and all 145, 146, and 147 frequency channels
-    * gqrx-scan --type file --pattern "FRS|GMR|14[5|6|7]"
+  * Scan FRS, GMRS, and all 145, 146, and 147 frequency channels
+     * gqrx-scan --type file --pattern "FRS|GMR|14[5|6|7]"
 
- * Scan 28.400 to 28.410 in CW mode with 500hz bandwidth, pausing for a signal level of -30 for 10s
-    * gqrx-scan --type scan --start 28400000 --end 28410000 --mode CW --bw 500 --delaylevel=-30 --delaytime 10
-    * 28.400e6 is valid too and might be easier to type/read
-    * Available modes: AM FM WFM WFM_ST LSB USB CW CWL CWU
+  * Scan 28.400 to 28.410 in CW mode with 500hz bandwidth, pausing for a signal level of -30 for 10s
+     * gqrx-scan --type scan --start 28400000 --end 28410000 --mode CW --bw 500 --delaylevel=-30 --delaytime 10
+     * 28.400e6 is valid too and might be easier to type/read
+     * Available modes: AM FM WFM WFM_ST LSB USB CW CWL CWU
 
- * Monitor a single channel, recording when the level is better than -50, waiting for 5 seconds before ending recording after signal drops
-    * gqrx-scan --type file --channels 20 --delaylevel=-50 --delaytime 5 --record --monitor
+  * Monitor a single channel, recording when the level is better than -50, waiting for 5 seconds before ending recording after signal drops
+     * gqrx-scan --type file --channels 20 --delaylevel=-50 --delaytime 5 --record --monitor
 
- * Use a config file
-    * gqrx-scan --config /home/path/something.pm
+  * Use a config file
+     * gqrx-scan --config /home/path/something.pm
 
 ### Command Line Arguments
 
