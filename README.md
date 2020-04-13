@@ -59,16 +59,16 @@ ex:  --norecord
 
 ##### Scan mode operations
 
- * --start 28400000
-    * Start at frequency 28.400
- * --end 28410000
-    * Stop at frequency 28.410
- * --mode USB
-    * Scan in USB demodulation
- * --bw 1000
-    * Set bandwidth to 1000hz
- * --step 250
-    * Step by 250hz in frequency scanning mode
+  * --start 28400000
+     * Start at frequency 28.400
+  * --end 28410000
+     * Stop at frequency 28.410
+  * --mode USB
+     * Scan in USB demodulation
+  * --bw 1000
+     * Set bandwidth to 1000hz
+  * --step 250
+     * Step by 250hz in frequency scanning mode
 
 ##### gqrxfile or file mode options
 
