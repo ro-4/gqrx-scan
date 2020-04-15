@@ -124,12 +124,13 @@ my %gqrxmodes = (
 
 # Other globals to declare for options or over-ride in config
 our (
-    $config,      $type,            $mode,     $start,
-    $end,         $channel,         $channels, $showall,
-    $pattern,     $tags,            $exclude,  $stop,
-    $wait,        $record,          $monitor,  $dumpchannels,
-    $coloroutput, $light,           $help,     $sort,
-    $csvfilename, $gqrxcsvfilename, $bandwidth, $narrow, $channelname
+    $config,      $type,            $mode,      $start,
+    $end,         $channel,         $channels,  $showall,
+    $pattern,     $tags,            $exclude,   $stop,
+    $wait,        $record,          $monitor,   $dumpchannels,
+    $coloroutput, $light,           $help,      $sort,
+    $csvfilename, $gqrxcsvfilename, $bandwidth, $narrow,
+    $channelname
 );
 
 # Other globals we use elsewhere
@@ -199,12 +200,11 @@ GetOptions(
     'sort!'              => \$sort,
     'csvfilename=s'      => \$csvfilename,
     'gqrxcsvfilename=s'  => \$gqrxcsvfilename,
-    'narrow:i'             => \$narrow,
+    'narrow:i'           => \$narrow,
     'help'               => \$help
 );
 
-if ( defined($narrow) && $narrow )
-{
+if ( defined($narrow) && $narrow ) {
     $namewidth = $narrow;
 }
 
@@ -326,7 +326,7 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
                 print 'Invalid bookmark line: [' . $line . "]\n";
                 sleep 1;
             }
-            $freq =~ s/[^0-9]//g;
+            $freq    =~ s/[^0-9]//g;
             $csvmode =~ s/[^A-Z_]//g;
             my $name = join( ' ', @name );
             $name =~ s/[^a-zA-Z0-9 ]//g;
@@ -350,7 +350,7 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
 
                 # If no channels, no pattern, and no tags, tune in
                 elsif (!defined($pattern)
-                    && !defined($tags) 
+                    && !defined($tags)
                     && !defined($channelname) )
                 {
                     $tune = '1';
@@ -367,8 +367,7 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
                 }
 
                 # If we specified a channel name, match it up
-                elsif (
-                    defined($channelname)
+                elsif ( defined($channelname)
                     && ( $name eq $channelname ) )
                 {
                     $tune = '1';
@@ -402,7 +401,7 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
 
             # If we matched, tune in
             if ($tune) {
-                $tuned = '1';
+                $tuned  = '1';
                 $slevel = tune(
                     $freq, $csvmode,  $curfreq, $name,
                     $bw,   $fileline, '',       '',
@@ -543,8 +542,8 @@ if ( $type eq 'scan' ) {
 
 exit;
 
-sub monitorHeader
-{
+sub monitorHeader {
+
     # Clear the screen to show monitored frequency and header info nicely
     print "\033[2J";
     print "\033[0;0H";
@@ -668,10 +667,9 @@ sub tune {
                 . $r . '] ' . '%s',
             $curfreq, $name, $tunemode, $level, $bestsignal{$freq},
             $delayleveltext );
-       if ( !defined($narrow) )
-       {
-            printf ( ' [Line ' . '%3s' . ']', $fileline);
-       }
+        if ( !defined($narrow) ) {
+            printf( ' [Line ' . '%3s' . ']', $fileline );
+        }
 
     }
 
@@ -906,9 +904,9 @@ sub loadgqrxcsv {
 
         # We only care if freq is numeric, ignore the other lines
         if ( defined($hz) && $hz =~ /^(\d+)$/ ) {
-            $name =~ s/^\s+|\s+$//g;
-            $csvmode =~ s/^\s+|\s+$//g;
-            $bw =~ s/^\s+|\s+$//g;
+            $name     =~ s/^\s+|\s+$//g;
+            $csvmode  =~ s/^\s+|\s+$//g;
+            $bw       =~ s/^\s+|\s+$//g;
             $linetags =~ s/^\s+|\s+$//g;
 
             if ( $linetags ne '' ) {
@@ -956,29 +954,28 @@ sub cleanmode {
 sub prettyfreq {
     my ($freq) = @_;
     chomp($freq);
-    my $subfreq = substr( $freq, -3 );
+    my $subfreq  = substr( $freq, -3 );
     my $mainfreq = substr( $freq, 0, length($freq) - 3 );
     $mainfreq = sprintf( "%.3f", $mainfreq / 1000 );
     return $mainfreq . ' ' . $subfreq;
 }
 
-sub smeter
-{
+sub smeter {
+
     # rtlsdr; -66 is about the noise floor.  +6 is one S unit
     my ($slevel) = @_;
-    if ( $slevel == 0 )
-    {
+    if ( $slevel == 0 ) {
         print "\n";
         return;
     }
-    my $floor = '-66';
-    my $num = '5';
+    my $floor    = '-66';
+    my $num      = '5';
     my $relative = $slevel - $floor;
-    $relative = int($relative / 3);
+    $relative = int( $relative / 3 );
     print "\033[K" . $r;
     print $o_w if ( $slevel > $delaylevel && $record );
-    print        '▁' x $num;
-    print        '▂' x $num if ( $relative >= 1 );
+    print '▁' x $num;
+    print '▂' x $num        if ( $relative >= 1 );
     print $c_m . '▃' x $num if ( $relative >= 2 );
     print $c_m . '▄' x $num if ( $relative >= 3 );
     print $c_b . '▅' x $num if ( $relative >= 4 );
@@ -987,7 +984,7 @@ sub smeter
     print $c_g . '▒' x $num if ( $relative >= 7 );
     print $c_r . '▓' x $num if ( $relative >= 8 );
     print $c_r . '█' x $num if ( $relative >= 9 );
-    
+
     # print "===" if ( $slevel >= -141 ); # S1
     # print "---" if ( $slevel >= -135 ); # S2
     # print "===" if ( $slevel >= -129 ); # S3
@@ -1011,11 +1008,11 @@ sub repeatheader {
     my ($slevel) = @_;
 
     # Get our scan time variables to use in a few places below
-    my ( $days, $hours, $mins, $secs ) = secondstoreadable( time - $timestarted );
-    
+    my ( $days, $hours, $mins, $secs )
+        = secondstoreadable( time - $timestarted );
+
     # Repaint the whole screen once a minute in monitor mode
-    if ( $monitor && $secs == 0 )
-    {
+    if ( $monitor && $secs == 0 ) {
         monitorHeader();
     }
 
@@ -1043,11 +1040,9 @@ sub repeatheader {
         $recordtext = $c_r . 'Disabled' . $r;
     }
 
-    my ($activefreq, $activecount) = getactive();
-    if ( defined($monitor) && !$monitor )
-    {
-        printf(
-            '--- Scan: '
+    my ( $activefreq, $activecount ) = getactive();
+    if ( defined($monitor) && !$monitor ) {
+        printf( '--- Scan: '
                 . $c_g . '%02s' . ':' . '%02s' . ':' . '%02s' . ':' . '%02s'
                 . $r
                 . ' - Most Active: '
@@ -1058,15 +1053,11 @@ sub repeatheader {
                 . ') - Record: '
                 . $recordtext
                 . " ---\n",
-            $days, $hours, $mins, $secs,
-            $activefreq, $activecount
-        );
+            $days, $hours, $mins, $secs, $activefreq, $activecount );
     }
 
-    if ( defined($monitor) && $monitor )
-    {
-        printf(
-            '--- Scan: '
+    if ( defined($monitor) && $monitor ) {
+        printf( '--- Scan: '
                 . $c_g . '%02s' . ':' . '%02s' . ':' . '%02s' . ':' . '%02s'
                 . $r . ' ('
                 . $c_c . '%s'
@@ -1074,8 +1065,7 @@ sub repeatheader {
                 . ') - Record: '
                 . $recordtext
                 . " ---\n",
-            $days, $hours, $mins, $secs, $activecount
-        );
+            $days, $hours, $mins, $secs, $activecount );
     }
 
     my $logline = sprintf(
@@ -1086,8 +1076,8 @@ sub repeatheader {
             . ':' . '%02s'
             . ' - Recordings: ' . '%s' . ' (' . '%s' . ")\n",
         $days, $hours, $mins, $secs, getactive(),
-        secondstoreadable($recordtime),           $recordcount,
-        ($record) ? 'Enabled' : 'Disabled'
+        secondstoreadable($recordtime),
+        $recordcount, ($record) ? 'Enabled' : 'Disabled'
     );
     if ( ( time - $lastlogheader ) > $logheader ) {
         logfile($logline);
@@ -1151,10 +1141,10 @@ sub logfile {
 # Convert seconds to human readable time
 sub secondstoreadable {
     my ($seconds) = @_;
-    my $days = int( $seconds / ( 24 * 60 * 60 ) );
-    my $hours = ( $seconds / ( 60 * 60 ) ) % 24;
-    my $mins  = ( $seconds / 60 ) % 60;
-    my $secs  = $seconds % 60;
+    my $days      = int( $seconds / ( 24 * 60 * 60 ) );
+    my $hours     = ( $seconds / ( 60 * 60 ) ) % 24;
+    my $mins      = ( $seconds / 60 ) % 60;
+    my $secs      = $seconds % 60;
     return ( $days, $hours, $mins, $secs );
 }
 
@@ -1316,7 +1306,9 @@ sub checkusage {
             usage($type);
         }
 
-        if ( defined($channel) && ( defined($pattern) || defined($channelname) ) ) {
+        if ( defined($channel)
+            && ( defined($pattern) || defined($channelname) ) )
+        {
             usage($type);
         }
 
@@ -1591,7 +1583,9 @@ sub usage {
     print
         '--delaylevel=-30   Delay scanning or record if a signal of -30 or better is heard (default: '
         . $delaylevel . ")\n";
-    print '--squelch=-40      Set GQRX squelch.  If not set, defaults to delaylevel' . "\n";
+    print
+        '--squelch=-40      Set GQRX squelch.  If not set, defaults to delaylevel'
+        . "\n";
     print
         '--ignorelevel=0.0  Level that we\'ll ignore a signal from for recording or stopping (default: '
         . $ignorelevel . ")\n";
@@ -1604,8 +1598,7 @@ sub usage {
         "--stop             Stop scanning until the enter key is hit (default: 0) or over-ride config with --nostop\n";
     print
         "--wait             Stop scanning until the channel is clear (default: 0)\n";
-    print
-        '--levelstop=0      Do not pause to listen for signal (default: '
+    print '--levelstop=0      Do not pause to listen for signal (default: '
         . $levelstop . ")\n\n";
 
     print "Colorizing Options:\n\n";
@@ -1627,7 +1620,8 @@ sub usage {
         print "\n\nMode " . $text
             . " detected but missing required parameters\n\n";
         if ( $channel && ( $pattern || $channelname ) ) {
-            print "--channel and --pattern/--channelname are exclusive options\n";
+            print
+                "--channel and --pattern/--channelname are exclusive options\n";
         }
         if ( $channelname && $pattern ) {
             print "--channelname and --pattern are exclusive options\n";
@@ -1639,11 +1633,18 @@ sub usage {
     if ( defined($text) && $text eq 'gqrxfile' ) {
         print "\n\nMode " . $text
             . " detected but missing required parameters\n\n";
-        unless ( $channel ne "" || $channels ne "" || $pattern || $channelname || $tags ) {
-            print "--channels or --pattern or --channelname or --tags required\n";
+        unless ( $channel ne ""
+            || $channels ne ""
+            || $pattern
+            || $channelname
+            || $tags )
+        {
+            print
+                "--channels or --pattern or --channelname or --tags required\n";
         }
         if ( $channel && ( $pattern || $channelname ) ) {
-            print "--channel and --pattern/--channelname are exclusive options\n";
+            print
+                "--channel and --pattern/--channelname are exclusive options\n";
         }
         if ( $channel && $tags ) {
             print "--channel and --tags are exclusive options\n";
