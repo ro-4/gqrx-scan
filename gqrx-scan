@@ -13,9 +13,6 @@ use Time::HiRes;
 use Getopt::Long qw(GetOptionsFromArray);
 Getopt::Long::Configure('pass_through');
 
-# TODO
-## Look for places to add $channelname properly
-
 # Warnings to fix
 # Use of uninitialized value $tmpfreq in scalar chomp at ./gqrx-scan line 258.
 # Use of uninitialized value $tmpfreq in string eq at ./gqrx-scan line 259.
@@ -27,7 +24,7 @@ Getopt::Long::Configure('pass_through');
 # Check to see if we have the Term::ANSIColor module so it's not a hard requirement
 my $ansi = eval {
     require Term::ANSIColor;
-    Term::ANSIColor->import(':constants');
+    Term::ANSIColor->import(':constants', 'colorstrip');
     1;
 };
 
@@ -81,6 +78,9 @@ our $squelch    = '-99';
 # sometimes scanning, even though nothing is there.
 our $ignorelevel = '0.0';
 
+# Noise floor of this device so we can create a fake S-Meter
+my $noiseFloor    = '-66';
+
 # Time to wait if signal is detected
 our $delaytime = '5';
 
@@ -100,6 +100,9 @@ our $namewidth = '20';
 # How many tune failures do we have
 my $tunefailures    = '0';
 my $maxtunefailures = '20';
+
+# Need to unset this outside of tune()
+my $monitoring = '0';
 
 ### No need to touch below here
 
@@ -192,6 +195,7 @@ GetOptions(
     'stop!'              => \$stop,
     'wait!'              => \$wait,
     'levelstop:s'        => \$levelstop,
+    'noisefloor:i'       => \$noiseFloor,
     'record!'            => \$record,
     'monitor!'           => \$monitor,
     'dumpchannels'       => \$dumpchannels,
@@ -279,7 +283,6 @@ gqrxconnect();
 if ( $type eq 'file' || $type eq 'gqrxfile' ) {
     local $| = '1';
     my $fileline   = '0';
-    my $monitoring = '0';
     my $tuned      = '0';
     my $runs       = '0';
     my $tuning     = '1';
@@ -460,7 +463,6 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
 }
 
 if ( $type eq 'scan' ) {
-    my $monitoring = '0';
     my $tuning     = '1';
     my $slevel     = '';
 
@@ -961,19 +963,22 @@ sub prettyfreq {
 }
 
 sub smeter {
-
     # rtlsdr; -66 is about the noise floor.  +6 is one S unit
     my ($slevel) = @_;
+    
     if ( $slevel == 0 ) {
         print "\n";
         return;
     }
-    my $floor    = '-66';
-    my $num      = '5';
-    my $relative = $slevel - $floor;
+    
+    my $relative = $slevel - $noiseFloor;
     $relative = int( $relative / 3 );
     print "\033[K" . $r;
     print $o_w if ( $slevel > $delaylevel && $record );
+
+    # How many characters to print in each segment
+    my $num      = '5';
+
     print '▁' x $num;
     print '▂' x $num        if ( $relative >= 1 );
     print $c_m . '▃' x $num if ( $relative >= 2 );
@@ -985,6 +990,7 @@ sub smeter {
     print $c_r . '▓' x $num if ( $relative >= 8 );
     print $c_r . '█' x $num if ( $relative >= 9 );
 
+    # Some attempt at making a 'real' smeter but...  Dunno really how to
     # print "===" if ( $slevel >= -141 ); # S1
     # print "---" if ( $slevel >= -135 ); # S2
     # print "===" if ( $slevel >= -129 ); # S3
@@ -1011,8 +1017,10 @@ sub repeatheader {
     my ( $days, $hours, $mins, $secs )
         = secondstoreadable( time - $timestarted );
 
-    # Repaint the whole screen once a minute in monitor mode
+    # Repaint the whole screen once a minute in monitor mode and reset
+    # monitoring so we force a re-tune, just in case.
     if ( $monitor && $secs == 0 ) {
+        $monitoring = '0';
         monitorHeader();
     }
 
@@ -1061,11 +1069,11 @@ sub repeatheader {
                 . $c_g . '%02s' . ':' . '%02s' . ':' . '%02s' . ':' . '%02s'
                 . $r . ' ('
                 . $c_c . '%s'
-                . $r
+                . $r . '/' . $c_r . '%s' . $r
                 . ') - Record: '
                 . $recordtext
                 . " ---\n",
-            $days, $hours, $mins, $secs, $activecount );
+            $days, $hours, $mins, $secs, $activecount, $tunefailures );
     }
 
     my $logline = sprintf(
