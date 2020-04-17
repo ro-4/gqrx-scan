@@ -324,6 +324,9 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
         monitorHeader();
     }
 
+    # Keep track of if this is our first pass
+    my $firstRun = '1';
+
     while ($tuning) {
         foreach my $line (@csv) {
             my $tune          = '0';
@@ -373,7 +376,12 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
                         || ( $curfreq =~ /$pattern/xms ) )
                     )
                 {
-                    $patternmatches++;
+                    # Only count our matches the first pass
+                    if ($firstRun)
+                    {
+                        $patternmatches++;
+                    }
+
                     $tune = '1';
                 }
 
@@ -381,6 +389,11 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
                 elsif ( defined($channelname)
                     && ( $name eq $channelname ) )
                 {
+                    # Still need to set patternmatches on first run
+                    if ($firstRun)
+                    {
+                        $patternmatches++;
+                    }
                     $tune = '1';
                 }
 
@@ -459,7 +472,7 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
             my $chancount = @channels;
             # If we found more than one pattern match and we're in monitor mode,
             # just flip between them.
-            if ( $patternmatches > 1 )
+            if ( $patternmatches )
             {
                 $levelstop = '1';
             }
@@ -474,6 +487,9 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
             $tuning = 0;
             print "\nExiting loop; too many tune failures\n";
         }
+
+        # Unset firstRun; we've gone thorugh once now
+        $firstRun = '0';
     }
 }
 
@@ -748,7 +764,7 @@ sub tune {
         && $level ne ''
         && $level > $delaylevel
         && $level != $ignorelevel
-        && ($monitoring == 0 || ( $monitoring && $patternmatches > 1 ) ) )
+        && ($monitoring == 0 || ( $monitoring && $patternmatches ) ) )
     {
         addactive($freq);
         $recordcount++;
