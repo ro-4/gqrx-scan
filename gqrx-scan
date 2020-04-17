@@ -151,6 +151,9 @@ my $monitortimeout = '0';
 my $recordtime  = '0';
 my $recordcount = '0';
 
+# Count how many pattern matches we had
+my $patternmatches = '0';
+
 # Track the most active frequency/channel
 my %mostactive;
 
@@ -288,6 +291,10 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
     my $tuning     = '1';
     my $slevel     = '';
 
+    # Set the squelch in GQRX
+    $t->print( 'L SQL ' . $squelch );
+    $t->waitfor( Match => '/RPRT/', Timeout => '5', Errmode => 'return' );
+
     # Retrieve our current frequency
     $t->print('f');
     my ( $prematch, $tmpfreq ) = $t->waitfor(
@@ -366,6 +373,7 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
                         || ( $curfreq =~ /$pattern/xms ) )
                     )
                 {
+                    $patternmatches++;
                     $tune = '1';
                 }
 
@@ -448,6 +456,13 @@ if ( $type eq 'file' || $type eq 'gqrxfile' ) {
         }
 
         if ($monitor) {
+            my $chancount = @channels;
+            # If we found more than one pattern match and we're in monitor mode,
+            # just flip between them.
+            if ( $patternmatches > 1 )
+            {
+                $levelstop = '1';
+            }
             $monitoring = '1';
             if ($clearscreen) { repeatheader($slevel); }
         }
@@ -566,7 +581,9 @@ sub tune {
         $recordstart = '0';
     }
 
-    unless ($monitoring) {
+    # Don't do this if we're just monitoring, but if we're monitoring multiple
+    # channels, do it!
+    if (!$monitoring || ( $monitoring && $patternmatches > 1)) {
         $t->print( 'F ' . $freq );
         $t->waitfor( Match => '/RPRT/', Timeout => '5', Errmode => 'return' );
 
@@ -578,10 +595,6 @@ sub tune {
 
         $t->waitfor( Match => '/RPRT/', Timeout => '5', Errmode => 'return' );
     }
-
-    # Set the squelch in GQRX
-    $t->print( 'L SQL ' . $squelch );
-    $t->waitfor( Match => '/RPRT/', Timeout => '5', Errmode => 'return' );
 
     my $level = 'n/a';
     if ( $levelstop || $monitor ) {
@@ -628,9 +641,12 @@ sub tune {
         $bestsignal{$freq} = $level;
     }
 
-    # Define the "recording" text once
-    my $recording = ' (' . $c_r . 'Rec' . $r . ')';
-
+    my $recording = '';
+    # Define the "recording" text once if not in monitoring mode
+    if ( $monitoring == 0 )
+    {
+        $recording = ' (' . $c_r . 'Rec' . $r . ')';
+    }
     # Define the color for level here so we can make it stand out
     my $l = $c_g;
 
@@ -732,7 +748,7 @@ sub tune {
         && $level ne ''
         && $level > $delaylevel
         && $level != $ignorelevel
-        && $monitoring == 0 )
+        && ($monitoring == 0 || ( $monitoring && $patternmatches > 1 ) ) )
     {
         addactive($freq);
         $recordcount++;
@@ -750,8 +766,17 @@ sub tune {
         }
 
         if ($wait) {
-            print ' --- Waiting for clear...';
-            if ($record) { print $recording; }
+            if ($monitoring == 0)
+            {
+                print "\n" . ' --- Waiting for clear ---' . "\n";
+                if ($record) { print $recording; }
+            }
+            else
+            {
+                # Move to line four for smeter rendering
+                print "\033[4;0H";
+            }
+            
             my $waitlevel  = '99.9';
             my $logprint   = '1';
             my $lastsignal = '0';
@@ -768,8 +793,13 @@ sub tune {
                     Errmode => 'return'
                 );
 
-                # Only print to screen when signal is good
-                if ( $waitlevel > $delaylevel ) {
+                if ( $waitlevel > $delaylevel && $monitoring ) {
+                    # Move to beginning of line
+                    print "\r";
+                    smeter($waitlevel);
+                }
+                # Only print to screen when signal is good and not in monitor mode
+                if ( $waitlevel > $delaylevel && $monitoring == 0 ) {
                     print ':';
                 }
 
@@ -798,10 +828,22 @@ sub tune {
                         $logprint = '1';
                     }
                     $lastsignal = $lastsignal + $levelwait;
-                    print '.';
+                    # If not in monitor mode, print . for low signal
+                    if ( $monitoring == 0 )
+                    {
+                        print '.';
+                    }
                 }
             }
-            print "\n";
+            # Just newline if not monitoring, repaint if we are
+            if ($monitoring == 0)
+            {
+                print "\n";
+            }
+            else
+            {
+                monitorHeader();
+            }
         }
         elsif ($stop) {
             print ' --- Hit enter to continue..';
@@ -829,6 +871,11 @@ sub tune {
                 Timeout => '5',
                 Errmode => 'return'
             );
+            # TODO: Remove unless I see repaint issues, should be already handled
+            # if ($monitoring && $patternmatches > 1)
+            # {
+            #     monitorHeader();
+            # }
         }
     }
     else {
@@ -1004,7 +1051,8 @@ sub smeter {
     # print "===" if ( $slevel >= -73 );  # S9 + 20
     # print "---" if ( $slevel >= -63 );  # S9 + 30
     # print "***" if ( $slevel >= -53 );  # S9 + 40
-    print "$r\n";
+    # Reset color and return to the start of this line for another update
+    print "$r\r";
 
     return;
 }
@@ -1024,11 +1072,9 @@ sub repeatheader {
         monitorHeader();
     }
 
-    # Go up to the top of the screen and move down 3 lines if in monitor mode
+    # # Go up to the top of the screen and move down 5 lines if in monitor mode
     if ($monitor) {
-        print "\033[0;0H";
-        print "\033[3B";
-        smeter($slevel);
+        print "\033[5;0H";
     }
 
     # Create detailed statistic text if we're set to record
